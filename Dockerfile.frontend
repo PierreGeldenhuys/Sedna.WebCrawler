@@ -38,6 +38,8 @@ RUN chown -R nginx:nginx /var/cache/nginx && \
 # Switch to non-root user
 USER nginx
 
+EXPOSE 80
+
 # Expose port
 EXPOSE 3000
 
