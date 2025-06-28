@@ -5,13 +5,19 @@ import io.ktor.server.netty.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import com.example.webcrawler.features.ping.api.pingRoutes
+import com.example.webcrawler.features.crawl.api.crawlRoutes
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(wait = true)
 }
 
 fun Application.module() {
+    install(ContentNegotiation) {
+        json()
+    }
     install(CORS) {
         anyHost()
         allowHeader("Content-Type")
@@ -22,5 +28,6 @@ fun Application.module() {
     }
     routing {
         pingRoutes()
+        crawlRoutes()
     }
 }

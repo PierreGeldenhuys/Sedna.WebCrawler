@@ -9,7 +9,7 @@ describe('ConnectionStatus', () => {
     
     const statusDot = screen.getByTitle('Connected');
     expect(statusDot).toBeInTheDocument();
-    expect(statusDot).toHaveClass('bg-green-500');
+    expect(statusDot).toHaveStyle('background-color: #22c55e');
   });
 
   it('shows red dot when disconnected', () => {
@@ -17,6 +17,6 @@ describe('ConnectionStatus', () => {
     
     const statusDot = screen.getByTitle('Disconnected');
     expect(statusDot).toBeInTheDocument();
-    expect(statusDot).toHaveClass('bg-red-500');
+    expect(statusDot).toHaveStyle('background-color: #ef4444');
   });
 });
