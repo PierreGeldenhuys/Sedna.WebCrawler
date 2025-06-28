@@ -1,0 +1,10 @@
+# Nginx Dockerfile for Sedna Web Crawler
+FROM nginx:alpine
+
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose HTTP port
+EXPOSE 80
+
+# Use default nginx entrypoint and command

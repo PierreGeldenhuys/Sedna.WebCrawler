@@ -38,6 +38,8 @@ WORKDIR /app
 
 # Copy the built fat JAR from build stage
 COPY --from=build /app/build/libs/*.jar app.jar
+EXPOSE 8080
+CMD ["java", "-jar", "app.jar"]
 
 # Create non-root user for security
 RUN useradd -r -s /bin/false appuser && chown -R appuser /app
