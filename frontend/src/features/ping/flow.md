@@ -1,3 +1,4 @@
+```mermaid
 sequenceDiagram
     participant User
     participant App as App.tsx
@@ -24,3 +25,4 @@ sequenceDiagram
     RTKQuery->>Backend: Periodic ping requests
     Backend-->>RTKQuery: Status responses
     RTKQuery-->>ConnectionStatus: Updates connection state
+```
