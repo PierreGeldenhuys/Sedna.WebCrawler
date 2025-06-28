@@ -1,0 +1,36 @@
+# Ignore Gradle build output
+build/
+.gradle/
+
+# Ignore IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore test results
+/test-results/
+
+# Ignore local environment files
+.env
+
+# Ignore node_modules if present (for any JS tooling)
+node_modules/
+
+# Ignore backend and frontend build artifacts
+backend/build/
+frontend/dist/
+frontend/node_modules/
+
+# Ignore coverage
+coverage/
+
+# Ignore VSCode settings
+.vscode/

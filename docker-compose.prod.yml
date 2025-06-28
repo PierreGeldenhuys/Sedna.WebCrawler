@@ -1,0 +1,73 @@
+# Production Docker Compose for Sedna Web Crawler
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: sedna-backend:latest
+    container_name: sedna-backend-prod
+    ports:
+      - "8080:8080"
+    environment:
+      - JAVA_OPTS=-Xmx1g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+      - KTOR_ENV=production
+    networks:
+      - sedna-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: sedna-frontend:latest
+    container_name: sedna-frontend-prod
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - sedna-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+networks:
+  sedna-network:
+    driver: bridge
+    name: sedna-network-prod
+
+# Production logging configuration
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"

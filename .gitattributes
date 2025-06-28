@@ -1,0 +1,24 @@
+# Ensure Unix shell scripts keep LF line endings
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Ensure Windows batch files keep CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Auto detect text files and perform LF normalization for most files
+* text=auto
+
+# Binary files
+*.jar binary
+*.war binary
+*.ear binary
+*.zip binary
+*.tar.gz binary
+*.pdf binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.svg binary

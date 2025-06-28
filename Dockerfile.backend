@@ -1,0 +1,58 @@
+# Backend Dockerfile for Sedna Web Crawler
+FROM openjdk:21-jdk-slim AS build
+
+# Set working directory
+WORKDIR /app
+
+# Copy entire backend directory for correct context
+COPY backend/. .
+
+# Debug: List all files after copy
+RUN ls -lR /app
+
+# Make gradlew executable
+RUN chmod +x ./gradlew
+
+# Download dependencies (for better caching)
+RUN ./gradlew dependencies --no-daemon
+
+# Force compilation before building the JAR
+RUN ./gradlew compileKotlin --no-daemon --stacktrace --info
+RUN ls -lR /app/build/ || true
+
+# Build the application (ensure fat JAR is created)
+RUN ./gradlew jar --no-daemon --stacktrace --info
+RUN ls -lR /app/build/ || true
+RUN find /app -name '*.jar' || true
+RUN cat /app/build/reports/* || true
+
+# Print Gradle tasks and source sets for debugging
+RUN echo "=== WHOAMI ===" && whoami
+RUN echo "=== GRADLE TASKS ===" && ./gradlew tasks --all --no-daemon > gradle_tasks.txt 2>&1 && cat gradle_tasks.txt
+RUN echo "=== PRINT SOURCE SET ===" && ./gradlew printSourceSet --no-daemon --stacktrace --info > gradle_sourceset.txt 2>&1 && cat gradle_sourceset.txt || true
+
+# Runtime stage
+FROM openjdk:21-jdk-slim
+
+WORKDIR /app
+
+# Copy the built fat JAR from build stage
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Create non-root user for security
+RUN useradd -r -s /bin/false appuser && chown -R appuser /app
+USER appuser
+
+# Expose port
+EXPOSE 8080
+
+# Health check - install curl first
+USER root
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8080/ping || exit 1
+
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
