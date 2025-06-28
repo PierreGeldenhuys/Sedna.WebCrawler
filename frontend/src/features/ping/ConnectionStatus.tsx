@@ -1,9 +1,12 @@
 export function ConnectionStatus({ connected }: { connected: boolean }) {
   return (
     <div 
-      className={`w-4 h-4 rounded-full ${
-        connected ? 'bg-green-500' : 'bg-red-500'
-      }`}
+      style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        backgroundColor: connected ? '#22c55e' : '#ef4444'
+      }}
       title={connected ? 'Connected' : 'Disconnected'}
     />
   );

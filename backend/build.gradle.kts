@@ -3,6 +3,7 @@ import org.gradle.api.file.DuplicatesStrategy
 
 plugins {
     kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
     id("io.ktor.plugin") version "3.2.0"
     id("org.graalvm.buildtools.native") version "0.9.28"
     application
@@ -21,6 +22,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.2.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.0")
     implementation("io.ktor:ktor-server-cors:3.2.0")
+    implementation("org.jsoup:jsoup:1.18.3")
     testImplementation("io.ktor:ktor-server-test-host:3.2.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.2.0")
     testImplementation("io.mockk:mockk:1.13.5")
