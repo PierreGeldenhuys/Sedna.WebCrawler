@@ -134,6 +134,38 @@ Each vertical slice must include a **Mermaid diagram** documenting the feature's
 
 ---
 
+## 🛠️ Feature Enhancements (Planned)
+
+> **Goal:** Incrementally improve UX, maintainability, and testability of the Sedna Web Crawler through new vertical slices, following strict TDD and vertical slice architecture.
+
+### 🧪 Phase 1: Test Setup (Write Tests First)
+- [x] Add tests for connection status polling and color transitions (green, red, interim/last-known)
+- [x] Add tests for crawl count display logic (no interim 0, only update after crawl completes)
+- [x] Add tests for dependency-injected crawl hook and input width
+
+### 🏗️ Phase 2: Implementation (Make Tests Pass)
+- [x] Refactor connection status logic into a dedicated `useConnectionStatus` hook
+- [x] Update connection status to show last known state during polling (no distracting flashes)
+- [x] Keep `ConnectionStatus` as a pure presentational component
+- [x] Refactor crawl count logic for robust, testable display (no interim 0, only after crawl completes)
+- [x] Add dependency injection to crawl hook for testability
+- [x] Expand crawl input width for improved usability
+
+### 🧹 Phase 3: Code Quality & Maintainability
+- [x] Remove cross-cutting logic from components; encapsulate stateful logic in hooks
+- [x] Ensure all presentational components are stateless and reusable
+- [x] Fix all TypeScript and build errors, including unused imports and function declarations
+
+### ✅ Phase 4: Integration & Completion
+- [x] Run full test suite (backend + frontend)
+- [x] Manual end-to-end verification
+- [x] Document enhancements and update project requirements
+- [x] Mark feature enhancements as complete and production-ready
+
+> **Status:** [ ] Not Started  [~] In Progress  [x] Complete
+
+---
+
 ## 📄 Interview Brief Context
 
 This app is based on the following technical assessment:

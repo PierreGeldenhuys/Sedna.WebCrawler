@@ -2,5 +2,6 @@
 import { usePingQuery } from './pingApi';
 
 export const usePing = () => {
-  return usePingQuery();
+  // Poll every 5 seconds for connection status
+  return usePingQuery(undefined, { pollingInterval: 5000 });
 };

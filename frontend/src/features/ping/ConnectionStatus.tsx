@@ -1,13 +1,23 @@
-export function ConnectionStatus({ connected }: { connected: boolean }) {
+export type ConnectionStatusState = true | false | 'interim';
+export function ConnectionStatus({ connected }: { connected: ConnectionStatusState }) {
+  let color = '#ef4444'; // red (offline)
+  let title = 'Disconnected';
+  if (connected === true) {
+    color = '#22c55e'; // green (online)
+    title = 'Connected';
+  } else if (connected === 'interim') {
+    color = '#a855f7'; // purple (interim)
+    title = 'Connecting';
+  }
   return (
-    <div 
+    <div
       style={{
         width: '60px',
         height: '60px',
         borderRadius: '50%',
-        backgroundColor: connected ? '#22c55e' : '#ef4444'
+        backgroundColor: color
       }}
-      title={connected ? 'Connected' : 'Disconnected'}
+      title={title}
     />
   );
 }

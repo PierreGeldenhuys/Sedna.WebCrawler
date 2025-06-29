@@ -1,12 +1,26 @@
 // CrawlPage.tsx - Component for crawling websites
-import React, { useState } from 'react';
-import { useCrawl } from './useCrawl';
-import type { CrawlPage as CrawlPageType } from './crawlApi';
 
-export function CrawlPage() {
+import React, { useState } from 'react';
+import { useCrawl as defaultUseCrawl } from './useCrawl';
+import type { CrawlPage as CrawlPageType, CrawlResponse } from './crawlApi';
+
+
+export interface CrawlPageProps {
+  useCrawlHook?: typeof defaultUseCrawl;
+}
+
+export function CrawlPage({ useCrawlHook = defaultUseCrawl }: CrawlPageProps = {}) {
   const [url, setUrl] = useState('');
   const [validationError, setValidationError] = useState('');
-  const [crawlDomain, { data, isLoading, isError, error }] = useCrawl();
+  const [crawlData, setCrawlData] = useState<CrawlResponse | null>(null);
+  const [hasAttemptedCrawl, setHasAttemptedCrawl] = useState(false);
+  const [crawlDomain, { isLoading, isError, error }] = useCrawlHook();
+
+  // Extracted placeholder logic for readability
+  const inputPlaceholder =
+    validationError ||
+    (isError && (error && 'data' in error ? (error.data as string) : 'An unexpected error occurred while crawling the website.')) ||
+    'Enter URL to crawl';
 
   const validateUrl = (inputUrl: string): boolean => {
     try {
@@ -24,13 +38,30 @@ export function CrawlPage() {
     }
     
     setValidationError('');
-    await crawlDomain({ url });
+    setHasAttemptedCrawl(true);
+    try {
+      const result = await crawlDomain({ url });
+      if ('data' in result && result.data) {
+        setCrawlData(result.data);
+      } else {
+        // API call succeeded but no data returned
+        setCrawlData(null);
+      }
+    } catch (err) {
+      // Error occurred, set crawlData to null so we show "0"
+      setCrawlData(null);
+    }
   };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
     if (validationError) {
       setValidationError('');
+    }
+    // Clear crawl data and reset attempt state when input changes
+    if (hasAttemptedCrawl) {
+      setCrawlData(null);
+      setHasAttemptedCrawl(false);
     }
   };
 
@@ -78,6 +109,11 @@ export function CrawlPage() {
             : 'none'
         }}
       >
+        {hasAttemptedCrawl && !isLoading
+          ? (crawlData && Array.isArray(crawlData.pages)
+              ? crawlData.pages.length
+              : '0')
+          : ''}
       </button>
 
       {/* Fixed Input Section */}
@@ -100,7 +136,7 @@ export function CrawlPage() {
           value={url}
           onChange={handleUrlChange}
           onKeyPress={handleKeyPress}
-          placeholder="Enter URL to crawl"
+          placeholder={inputPlaceholder}
           style={{
             fontFamily: 'Inter',
             fontWeight: 600,
@@ -110,50 +146,13 @@ export function CrawlPage() {
             padding: '15px 20px',
             border: 'none',
             background: '#DFDFDF',
-            width: '600px',
+            width: '900px', // widened input
             outline: 'none',
-            color: '#222222',
+            color: (validationError || isError) ? '#dc3545' : '#222222',
             marginLeft: '-20px'
           }}
         />
-        
-        <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
-          {validationError && (
-            <p style={{
-              fontFamily: 'Inter',
-              fontSize: '16px',
-              color: '#dc3545',
-              margin: 0
-            }}>
-              {validationError}
-            </p>
-          )}
-        </div>
       </div>
-
-      {/* Error Display (if needed, positioned below input) */}
-      {isError && (
-        <div style={{
-          position: 'fixed',
-          top: '340px',
-          left: '60px',
-          right: '60px',
-          background: '#f8d7da',
-          border: '1px solid #f5c6cb',
-          borderRadius: '8px',
-          padding: '20px',
-          zIndex: 98
-        }}>
-          <p style={{
-            fontFamily: 'Inter',
-            fontSize: '18px',
-            color: '#721c24',
-            margin: 0
-          }}>
-            Error: {error && 'data' in error ? (error.data as string) : 'An unexpected error occurred while crawling the website.'}
-          </p>
-        </div>
-      )}
 
       {/* Scrollable Results Area */}
       <div style={{
@@ -163,9 +162,9 @@ export function CrawlPage() {
         padding: '0 60px 60px 60px'
       }}>
         {/* Results Display */}
-        {data && (
+        {crawlData && Array.isArray(crawlData.pages) && (
           <div>
-            {data.pages.map((page: CrawlPageType, index: number) => (
+            {crawlData.pages.map((page: CrawlPageType, index: number) => (
               <div 
                 key={index} 
                 style={{
