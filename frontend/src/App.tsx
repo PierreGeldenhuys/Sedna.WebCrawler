@@ -1,20 +1,20 @@
-import { usePing, ConnectionStatus } from './features/ping';
+
+import { ConnectionStatus } from './features/ping';
+import { useConnectionStatus } from './features/ping/useConnectionStatus';
 import { CrawlPage } from './features/crawl';
-import './App.css'
+import './App.css';
 
 function App() {
-  const { isLoading, isError, isSuccess } = usePing();
-  const connected = isSuccess && !isLoading && !isError;
-
+  const connected = useConnectionStatus();
   return (
     <div style={{ background: '#DFDFDF', minHeight: '100vh', fontFamily: 'Inter' }}>
       {/* Header */}
-      <header style={{ 
+      <header style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        background: '#222222', 
+        background: '#222222',
         height: '170px',
         width: '100%',
         display: 'flex',
@@ -34,9 +34,9 @@ function App() {
         }}>
           Sedna Crawler
         </h1>
-        
+
         <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
-          <ConnectionStatus connected={connected} />
+          <ConnectionStatus key={String(connected)} connected={connected} />
         </div>
       </header>
 
@@ -45,7 +45,7 @@ function App() {
         <CrawlPage />
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

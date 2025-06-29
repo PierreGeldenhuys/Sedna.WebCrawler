@@ -19,4 +19,20 @@ describe('ConnectionStatus', () => {
     expect(statusDot).toBeInTheDocument();
     expect(statusDot).toHaveStyle('background-color: #ef4444');
   });
+
+  it('shows red dot during loading (polling)', () => {
+    // Simulate polling/loading state: connected should be false
+    render(<ConnectionStatus connected={false} />);
+    const statusDot = screen.getByTitle('Disconnected');
+    expect(statusDot).toBeInTheDocument();
+    expect(statusDot).toHaveStyle('background-color: #ef4444');
+  });
+
+  it('shows purple dot during loading (interim state)', () => {
+    // Simulate interim state: connected = 'interim'
+    render(<ConnectionStatus connected="interim" />);
+    const statusDot = screen.getByTitle('Connecting');
+    expect(statusDot).toBeInTheDocument();
+    expect(statusDot).toHaveStyle('background-color: #a855f7'); // purple-500
+  });
 });
