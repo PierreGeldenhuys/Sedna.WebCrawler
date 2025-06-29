@@ -16,6 +16,12 @@ export function CrawlPage({ useCrawlHook = defaultUseCrawl }: CrawlPageProps = {
   const [hasAttemptedCrawl, setHasAttemptedCrawl] = useState(false);
   const [crawlDomain, { isLoading, isError, error }] = useCrawlHook();
 
+  // Extracted placeholder logic for readability
+  const inputPlaceholder =
+    validationError ||
+    (isError && (error && 'data' in error ? (error.data as string) : 'An unexpected error occurred while crawling the website.')) ||
+    'Enter URL to crawl';
+
   const validateUrl = (inputUrl: string): boolean => {
     try {
       new URL(inputUrl);
@@ -130,11 +136,7 @@ export function CrawlPage({ useCrawlHook = defaultUseCrawl }: CrawlPageProps = {
           value={url}
           onChange={handleUrlChange}
           onKeyPress={handleKeyPress}
-          placeholder={
-            validationError || 
-            (isError && (error && 'data' in error ? (error.data as string) : 'An unexpected error occurred while crawling the website.')) || 
-            "Enter URL to crawl"
-          }
+          placeholder={inputPlaceholder}
           style={{
             fontFamily: 'Inter',
             fontWeight: 600,

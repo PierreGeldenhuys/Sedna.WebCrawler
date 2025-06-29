@@ -36,7 +36,7 @@ function App() {
         </h1>
 
         <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
-          <ConnectionStatus key={String(connected)} connected={connected} />
+          <ConnectionStatus connected={connected} />
         </div>
       </header>
 
