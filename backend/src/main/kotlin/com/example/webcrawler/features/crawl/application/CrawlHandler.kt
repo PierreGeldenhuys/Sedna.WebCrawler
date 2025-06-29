@@ -116,7 +116,7 @@ class CrawlHandler {
         } catch (e: Exception) {
             // Only log network or parsing errors, not content type skips
             if (e.message?.contains("Unhandled content type") != true) {
-                println("Failed to fetch $currentUrl: ${e.message}")
+                logger.error("Failed to fetch $currentUrl: ${e.message}", e)
             }
         }
     }
