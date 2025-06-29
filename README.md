@@ -4,23 +4,24 @@ A **production-ready** modern web crawler application built with **Kotlin/Ktor**
 
 ## ✨ Key Features
 
-🔍 **Intelligent Web Crawling** - Crawls up to 50 pages per domain with duplicate prevention and cross-domain filtering  
+🔍 **Intelligent Web Crawling** - Crawls up to 200 pages per domain with duplicate prevention and cross-domain filtering  
 🎨 **Modern UI/UX** - Beautiful Figma-inspired design with animated floating controls and fixed layouts  
-🧪 **Comprehensive Testing** - 22/22 tests passing (14 backend + 8 frontend)  
+🧪 **Comprehensive Testing** - 29/29 tests passing (14 backend + 15 frontend)  
 🚀 **Production Ready** - Docker deployment with NGINX reverse proxy  
-⚡ **Real-time Feedback** - Live connection status and animated loading states  
-📱 **Responsive Design** - Perfect alignment and responsive across all screen sizes
+⚡ **Real-time Feedback** - Live connection status and animated loading states
+
 
 ## 📋 Table of Contents
 
-- [Tech Stack Overview](#-tech-stack-overview)
-- [Project Structure](#-project-structure)
 - [Quick Start](#-quick-start)
+- [Testing](#-testing)
 - [Running with Docker Compose](#-running-with-docker-compose)
 - [Running Without Docker](#-running-without-docker)
-- [Testing](#-testing)
+- [Tech Stack Overview](#-tech-stack-overview)
+- [Project Structure](#-project-structure)
 - [Debugging Guide](#-debugging-guide)
 - [Development Workflow](#-development-workflow)
+- [Architecture & File Analysis](#architecture--file-analysis)
 
 ## 🛠️ Tech Stack Overview
 
@@ -90,7 +91,6 @@ A **production-ready** modern web crawler application built with **Kotlin/Ktor**
 
 #### Docker Files:
 - **`docker-compose.yml`** - Production multi-service configuration with health checks and networking
-- **`docker-compose.dev.yml`** - Development environment with hot reload and debug ports
 - **`docker-compose.prod.yml`** - Production-optimized configuration with NGINX reverse proxy
 - **`Dockerfile.backend`** - Multi-stage Docker build for Kotlin/Ktor backend application
 - **`Dockerfile.frontend`** - Multi-stage Docker build for React frontend with NGINX serving
@@ -121,16 +121,15 @@ Sedna.WebCrawler/
 │   ├── package.json             # NPM configuration
 │   └── vite.config.ts           # Vite configuration
 ├── docker-compose.yml           # Production Docker configuration
-├── docker-compose.dev.yml       # Development Docker configuration
 └── README.md                    # This file
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Java 21+** (for backend)
-- **Node.js 18+** (for frontend)
-- **Docker & Docker Compose** (for containerized deployment)
+- **Java 21+** (for backend, only if running without Docker)
+- **Node.js 18+** (for frontend, only if running without Docker)
+- **Docker & Docker Compose** (recommended for easiest setup)
 
 ### Clone and Setup
 ```bash
@@ -138,51 +137,71 @@ git clone <repository-url>
 cd Sedna.WebCrawler
 ```
 
-## 🐳 Running with Docker Compose
 
-### Development Environment
+### Run with Docker (Recommended)
+You can use either the default `docker-compose.yml` (simple, no resource limits) or the production-optimized `docker-compose.prod.yml` (resource limits, logging, always-restart, etc.).
+
+**Option 1: Default (simple, no resource limits)**
 ```bash
-# Start development environment with hot reload
-docker-compose -f docker-compose.dev.yml up --build
-
-# Run in background
-docker-compose -f docker-compose.dev.yml up -d --build
-
-# View logs
-docker-compose -f docker-compose.dev.yml logs -f
-
-# Stop services
-docker-compose -f docker-compose.dev.yml down
-```
-
-### Production Environment
-```bash
-# Start production environment
-docker-compose -f docker-compose.prod.yml up --build
-
-# Run in background
-docker-compose -f docker-compose.prod.yml up -d --build
-
-# Stop services
-docker-compose -f docker-compose.prod.yml down
-```
-
-### Standard Environment
-```bash
-# Start standard environment
 docker-compose up --build
-
-# Run in background
-docker-compose up -d --build
-
-# Stop services
-docker-compose down
 ```
 
-**Endpoints:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080
-- Health Check: http://localhost:8080/ping
+**Option 2: Production (resource limits, logging, always-restart)**
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+### Run Without Docker (Dev Only)
+```bash
+# Start backend
+cd backend && ./gradlew run
+# In a new terminal, start frontend
+cd frontend && npm install && npm run dev
+```
+
+**Frontend:** http://localhost:5173 (dev) or http://localhost:3000 (prod)
+**Backend:** http://localhost:8080
+## Architecture & File Analysis
+
+### High-Level Architecture
+
+- **Frontend (React/TypeScript/Vite):**
+  - Dev: Served by Vite on port 5173 (hot reload, no NGINX)
+  - Prod: Built static files served by NGINX on port 3000
+  - NGINX proxies `/api/` requests to backend (see `nginx.conf`)
+- **Backend (Kotlin/Ktor):**
+  - Runs on port 8080
+  - Handles `/ping` and `/crawl` endpoints
+  - Implements concurrency, deduplication, crawl limits, and robust error/logging (SLF4J+Logback)
+- **Docker/Compose:**
+  - Dev Compose: (removed, not supported)
+  - Prod Compose: NGINX serves frontend, proxies API, backend runs optimized
+  - Health checks for both services
+
+### File/Folder Overview
+
+- `backend/` — Kotlin/Ktor backend (vertical slice: `features/ping`, `features/crawl`)
+- `frontend/` — React/TypeScript frontend (vertical slice: `features/ping`, `features/crawl`)
+- `nginx.conf` — NGINX config (used only in frontend production Docker image)
+- `docker-compose.prod.yml` — Prod Compose (NGINX, optimized backend)
+- `Dockerfile.frontend` — Multi-stage build, NGINX static serving
+- `Dockerfile.backend` — Multi-stage build, fat JAR, non-root user
+
+### Backend Crawl Logic Highlights
+- **Concurrency:** Coroutine-based parallel crawling with configurable concurrency limit
+- **Deduplication:** Fast Set-based deduplication, no duplicate URLs
+- **Crawl Limits:** Max 200 pages per crawl, robust error/timeout handling
+- **Logging:** SLF4J+Logback, all errors and crawl events logged, no file/console printlns
+- **Resource Filtering:** Skips non-HTML resources before fetching
+
+### Frontend Highlights
+- **Modern UI:** Figma-inspired, pure inline styles, animated controls
+- **Redux Toolkit + RTK Query:** State management and API calls
+- **Comprehensive Testing:** 100% test pass rate, TDD enforced
+
+---
+
+For detailed requirements and vertical slice status, see [`project-requirements.md`](./project-requirements.md).
 
 ## 💻 Running Without Docker
 
@@ -233,18 +252,22 @@ npm run preview
 
 ### Test Coverage Status ✅
 - **Backend**: 14/14 tests passing (100% ✅)
-  - 4 Ping feature tests (connectivity)
-  - 10 Crawl feature tests (comprehensive crawling scenarios)
-- **Frontend**: 8/8 tests passing (100% ✅)
-  - 3 Ping feature tests (connection status UI)
-  - 5 Crawl feature tests (form validation, UI interactions)
-- **Total**: 22/22 tests passing across full stack 🎉
+  - 1 Ping handler unit test
+  - 1 Ping route integration test
+  - 8 Crawl handler unit tests (invalid URL, valid URL, domain filtering, deduplication, title extraction, malformed URL, crawl limit, timeout)
+  - 4 Crawl route integration tests (valid, invalid JSON, invalid URL, domain filtering)
+- **Frontend**: 15/15 tests passing (100% ✅)
+  - 4 Ping connection status component tests (green, red, loading, interim)
+  - 1 Ping hook test
+  - 10 Crawl page tests (form, validation, loading, crawl count, error, input change, etc.)
+- **Total**: 29/29 tests passing across full stack 🎉
 
 ### Run All Tests
 ```bash
-# With Docker
-docker-compose -f docker-compose.dev.yml run backend ./gradlew test
-docker-compose -f docker-compose.dev.yml run frontend npm test
+
+# With Docker (run from project root)
+docker-compose run backend ./gradlew test
+docker-compose run frontend npm test
 
 # Without Docker
 cd backend && ./gradlew test
@@ -272,7 +295,8 @@ cd backend
 ```bash
 cd frontend
 
-# Run all tests (8 tests)
+
+# Run all tests (15 tests)
 npm test
 
 # Run tests in watch mode
@@ -286,11 +310,9 @@ npm test -- CrawlPage.test.tsx
 ```
 
 **Frontend Test Coverage:**
-- ✅ Ping connection status component tests
-- ✅ Ping hook functionality tests  
-- ✅ Crawl page form validation tests
-- ✅ Crawl page UI interaction tests
-- ✅ Crawl page loading states tests
+- ✅ Ping connection status component tests (green, red, loading, interim)
+- ✅ Ping hook test
+- ✅ Crawl page: form, validation, loading, crawl count, error, input change, etc.
 
 ## 🐛 Debugging Guide
 
@@ -306,19 +328,12 @@ npm test -- CrawlPage.test.tsx
 
 #### 2. Docker Debug
 ```bash
-# Start with debug port exposed
-docker-compose -f docker-compose.dev.yml up
+
+# Start with debug port exposed (edit docker-compose.yml to expose debug port if needed)
+docker-compose up
 
 # Backend debug port: 5005
 # Connect your IDE to localhost:5005
-```
-
-#### 3. Logging
-```kotlin
-// Add logging in Application.kt
-install(CallLogging) {
-    level = Level.INFO
-}
 ```
 
 #### 4. Health Check Debugging
@@ -368,91 +383,6 @@ rm -rf frontend/node_modules/.vite
 npm run dev
 ```
 
-### Docker Debugging
-
-#### 1. Container Inspection
-```bash
-# View running containers
-docker ps
-
-# Check container logs
-docker-compose logs backend
-docker-compose logs frontend
-
-# Execute commands in running container
-docker-compose exec backend bash
-docker-compose exec frontend sh
-
-# Inspect container details
-docker inspect sedna-backend
-```
-
-#### 2. Network Issues
-```bash
-# Check network connectivity
-docker-compose exec backend ping frontend
-docker-compose exec frontend ping backend
-
-# Check port bindings
-docker port sedna-backend
-docker port sedna-frontend
-```
-
-#### 3. Volume Issues
-```bash
-# Check mounted volumes
-docker-compose exec backend ls -la
-docker-compose exec frontend ls -la
-
-# Rebuild with no cache
-docker-compose build --no-cache
-```
-
-### Common Issues & Solutions
-
-#### Backend Issues
-1. **Port already in use**
-   ```bash
-   # Find and kill process using port 8080
-   lsof -ti:8080 | xargs kill -9
-   ```
-
-2. **Java version mismatch**
-   ```bash
-   # Check Java version
-   java -version
-   
-   # Use JAVA_HOME if needed
-   export JAVA_HOME=/path/to/java21
-   ```
-
-#### Frontend Issues
-1. **Node modules issues**
-   ```bash
-   # Clear and reinstall
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-2. **Port conflicts**
-   ```bash
-   # Use different port
-   npm run dev -- --port 5174
-   ```
-
-#### Docker Issues
-1. **Permission denied**
-   ```bash
-   # Fix gradlew permissions
-   chmod +x backend/gradlew
-   ```
-
-2. **Out of disk space**
-   ```bash
-   # Clean Docker system
-   docker system prune -a
-   ```
-
 ## 🔄 Development Workflow
 
 ### TDD Approach
@@ -478,6 +408,44 @@ git push origin feature/crawl-domain
 
 ---
 
-**Project Status:** ✅ Ping feature complete | 🚧 Domain crawling in progress
 
-For detailed feature requirements and progress, see [`project-requirements.md`](./project-requirements.md).
+---
+
+## 🤖 GitHub Workflow, Copilot AI, & MCP Server Integration
+
+### GitHub Workflow
+- All code changes are made via feature branches and Pull Requests (PRs).
+- PRs are reviewed and merged only after all tests pass and code review feedback is addressed.
+- The repository uses vertical slice architecture: each feature is isolated and locked after completion (see `project-requirements.md`).
+- All major changes, refactors, and enhancements are tracked via issues and PRs for full traceability.
+
+### Copilot & AI Feedback Process
+- GitHub Copilot is used as an AI coding assistant for:
+  - Refactoring, code generation, and documentation
+  - Responding to PR review comments and automating repetitive tasks
+  - Analyzing architecture, suggesting improvements, and updating documentation
+- Copilot is always instructed to:
+  - Follow strict TDD (Test-Driven Development) and vertical slice conventions
+  - Never modify completed/locked features (immutability rule)
+  - Prioritize maintainability, correctness, and clear logging
+  - Respond to PR review feedback and update code/docs as needed
+- All Copilot actions are transparent and traceable in PRs and commit messages.
+
+### How to Use/Request Copilot Feedback
+1. Open a GitHub Issue or PR and describe the change or feedback needed.
+2. Assign Copilot (or request AI review/feedback in the PR/issue).
+3. Copilot will:
+   - Analyze the codebase and requirements
+   - Propose code changes, refactors, or documentation updates
+   - Respond to review comments and iterate until all feedback is addressed
+4. All Copilot actions are visible in the PR discussion and commit history.
+
+### GitHub MCP Server Integration
+- The GitHub MCP (Model Context Protocol) server provides a secure, real-time connection between the repository and Copilot/AI agents.
+- This enables:
+  - Automated PR review, code suggestions, and feedback directly in GitHub
+  - Live context sharing (code, issues, PRs) for more accurate and relevant AI responses
+  - Seamless assignment of Copilot to issues/PRs for hands-off automation
+- The MCP server ensures Copilot always works with the latest code and project state, making AI feedback more robust and actionable.
+
+For more details on Copilot's instructions and project rules, see [`copilot-instructions.md`](./copilot-instructions.md) and [`project-requirements.md`](./project-requirements.md).
