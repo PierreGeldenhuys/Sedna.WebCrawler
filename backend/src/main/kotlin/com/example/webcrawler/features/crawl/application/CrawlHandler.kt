@@ -70,6 +70,18 @@ class CrawlHandler {
         }
     }
 
+    /**
+     * Returns the next batch of URLs to crawl, up to the concurrency limit and respecting the maxPages limit.
+     * Removes URLs from the queue and set, and skips already visited URLs.
+     *
+     * @param urlsToVisit Queue of URLs to visit.
+     * @param urlsToVisitSet Set of URLs to visit (for deduplication).
+     * @param visitedUrls Set of already visited URLs.
+     * @param concurrency Maximum number of concurrent crawls.
+     * @param maxPages Maximum number of pages to crawl.
+     * @param pageCount Number of pages already crawled.
+     * @return List of URLs for the next batch.
+     */
     private fun getNextBatch(
         urlsToVisit: ArrayDeque<String>,
         urlsToVisitSet: MutableSet<String>,
@@ -152,7 +164,7 @@ class CrawlHandler {
      * Disallow common binary/document types (pdf, docx, jpg, png, etc).
      */
     private fun hasAllowedExtension(url: String): Boolean {
-        val disallowed = setOf(
+        val disallowedExtensions = setOf(
             ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar", ".7z", ".tar", ".gz",
             ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".mp3", ".mp4", ".avi", ".mov", ".wmv", ".flv",
             ".exe", ".bin", ".dmg", ".iso", ".apk", ".msi", ".csv", ".json"
@@ -164,7 +176,7 @@ class CrawlHandler {
         if (extIdx == -1 || path.substring(extIdx) == ".html" || path.substring(extIdx) == ".htm" || path.substring(extIdx) == ".php" || path.substring(extIdx) == ".asp" || path.substring(extIdx) == ".aspx" || path.substring(extIdx) == ".jsp" || path.substring(extIdx) == ".jspx" || path.substring(extIdx) == ".xml") {
             return true
         }
-        return path.substring(extIdx) !in disallowed
+        return path.substring(extIdx) !in disallowedExtensions
     }
 
     private fun logCrawlTime(startTime: Long, foundPages: List<Page>) {

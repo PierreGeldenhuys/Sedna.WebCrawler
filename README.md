@@ -15,9 +15,8 @@ A **production-ready** modern web crawler application built with **Kotlin/Ktor**
 
 - [Quick Start](#-quick-start)
 - [Testing](#-testing)
-- [Running with Docker Compose](#-running-with-docker-compose)
+- [Run with Docker (Recommended)](#run-with-docker-recommended)
 - [Running Without Docker](#-running-without-docker)
-- [Tech Stack Overview](#-tech-stack-overview)
 - [Project Structure](#-project-structure)
 - [Debugging Guide](#-debugging-guide)
 - [Development Workflow](#-development-workflow)

@@ -102,4 +102,24 @@ class CrawlHandlerTest {
         // The handler should not crash and should return a valid result
         assertTrue(result.pages.size >= 0) // Could be empty or have some results
     }
+    
+    @Test
+    fun `should return pages sorted by URL`() {
+        val handler = CrawlHandler()
+        val command = CrawlCommand.Request("https://httpbin.org")
+        val result = handler.handle(command)
+        val urls = result.pages.map { it.url }
+        val sortedUrls = urls.sorted()
+        assertEquals(sortedUrls, urls, "Pages should be sorted by URL")
+    }
+
+    @Test
+    fun `should not include disallowed extensions`() {
+        val handler = CrawlHandler()
+        // This URL should not be crawled as it ends with a disallowed extension
+        val command = CrawlCommand.Request("https://httpbin.org/image.png")
+        val result = handler.handle(command)
+        // Should not include the .png page
+        assertTrue(result.pages.none { it.url.endsWith(".png") }, "Should not include disallowed extensions")
+    }
 }
