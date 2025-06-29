@@ -15,9 +15,9 @@ COPY backend/gradlew.bat ./gradlew.bat
 # Make gradlew executable
 RUN chmod +x ./gradlew
 
+
 # Download dependencies (for better caching)
 RUN ./gradlew dependencies --no-daemon --build-cache
-COPY backend/gradlew ./gradlew
 # Now copy the rest of the backend source
 COPY backend/. .
 
