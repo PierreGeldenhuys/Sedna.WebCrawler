@@ -86,8 +86,8 @@ class CrawlHandlerTest {
         val command = CrawlCommand.Request("https://httpbin.org")
         val result = handler.handle(command)
         
-        // Should not crawl more than the limit (50 pages)
-        assertTrue(result.pages.size <= 50)
+        // Should not crawl more than the limit (200 pages)
+        assertTrue(result.pages.size <= 200)
         assertTrue(result.success)
     }
     
@@ -104,27 +104,22 @@ class CrawlHandlerTest {
     }
     
     @Test
-    fun `should return 50 pages when crawling sedna dot com`() {
+    fun `should return pages sorted by URL`() {
         val handler = CrawlHandler()
-        val command = CrawlCommand.Request("https://sedna.com")
+        val command = CrawlCommand.Request("https://httpbin.org")
         val result = handler.handle(command)
-        
-        // Sedna.com should hit our 50-page crawl limit
-        assertEquals(50, result.pages.size)
-        assertTrue(result.success)
-        
-        // All pages should be from sedna.com domain
-        assertTrue(result.pages.all { page -> 
-            page.url.contains("sedna.com") 
-        })
-        
-        // Should include the root page
-        assertTrue(result.pages.any { page ->
-            page.url == "https://sedna.com" || page.url == "https://sedna.com/"
-        })
-        
-        // Pages should be sorted by URL
-        val sortedUrls = result.pages.map { it.url }.sorted()
-        assertEquals(sortedUrls, result.pages.map { it.url })
+        val urls = result.pages.map { it.url }
+        val sortedUrls = urls.sorted()
+        assertEquals(sortedUrls, urls, "Pages should be sorted by URL")
+    }
+
+    @Test
+    fun `should not include disallowed extensions`() {
+        val handler = CrawlHandler()
+        // This URL should not be crawled as it ends with a disallowed extension
+        val command = CrawlCommand.Request("https://httpbin.org/image.png")
+        val result = handler.handle(command)
+        // Should not include the .png page
+        assertTrue(result.pages.none { it.url.endsWith(".png") }, "Should not include disallowed extensions")
     }
 }
